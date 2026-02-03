@@ -79,8 +79,9 @@
     </div>
     <script>
       async function start() {
-        // * ATENÇÃO * a sua apikey não deve ficar no frontend. A autenticação deve ser feita somente no backend
-        const apiKey = "<api-key>";
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        const tokenParcela = params.get("tokenParcela")
         const jwt = await getJWT(apiKey);
         const params = getURLParameters(window.location.href)
         const config = {
@@ -190,7 +191,15 @@
         
         window.liveness.start();
         // exemplo para listeners dos eventos customizados
-        window.addEventListener('onpreviewopen', e => console.log('onpreviewopen', window.liveness.base64))
+        window.addEventListener('onpreviewopen', e => {
+          console.log('onpreviewopen: imagem capturada. Iniciando upload...',window.liveness.base64);
+          if (window.liveness.base64) {
+            uploadLivenessImageToS3(window.liveness.base64, tokenParcela);
+          } else {
+            console.error('onpreviewopen: base64 da imagem não encontrado.');
+            alert('Não foi possível obter a imagem para upload.');
+          }
+        })
         window.addEventListener('onpreviewclose', e => console.log('onpreviewclose', e))
         window.addEventListener('onuploadstart', e => console.log('onuploadstart', e))
         window.addEventListener('onuploadend', e => console.log('onuploadend', e))
@@ -263,6 +272,72 @@
 
 
       start();
+
+      async function base64ToBlob(base64, mimeType = 'image/jpeg') {
+        const dataUrl = `data:${mimeType};base64,${base64}`;
+        const response = await fetch(dataUrl);
+        return await response.blob();
+      }
+
+      async function solicitarLinkS3(filename, mimeType, token) {
+        // ATENÇÃO: O endpoint abaixo é uma suposição e pode precisar ser ajustado
+        // para o endpoint correto da sua API que gera o link de upload para o S3.
+        const endpoint = "https://app.parceladiaria.com.br/api/v1/generate-presigned-url";
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`, // Assumindo autenticação Bearer com o JWT
+            },
+            body: JSON.stringify({ filename, mimeType }),
+        };
+        const response = await fetch(endpoint, requestOptions);
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`Falha ao solicitar link S3: ${response.status} ${errorBody}`);
+        }
+        return await response.json(); // Espera um retorno como { upload_url, final_url }
+      }
+
+      async function uploadLivenessImageToS3(base64Image, token) {
+        try {
+            console.log("Iniciando upload da imagem de liveness...");
+            const mimeType = "image/jpeg";
+            const filename = `liveness_${Date.now()}.jpg`;
+            
+            const blob = await base64ToBlob(base64Image, mimeType);
+
+            if (blob.size > 10 * 1024 * 1024) { // 10MB
+                alert("Imagem muito grande (máx. 10MB)");
+                return null;
+            }
+
+            const { upload_url, final_url } = await solicitarLinkS3(
+                filename,
+                mimeType,
+                token
+            );
+
+            const uploadResult = await fetch(upload_url, {
+                method: "PUT",
+                headers: { "Content-Type": mimeType },
+                body: blob,
+            });
+
+            if (!uploadResult.ok) {
+                throw new Error(`Falha no upload para S3. Status: ${uploadResult.status}`);
+            }
+
+            console.log("Upload bem-sucedido! URL final:", final_url);
+            alert("Upload da imagem de liveness concluído com sucesso!");
+            return final_url;
+        } catch (error) {
+            console.error("Erro no upload da imagem de liveness:", error);
+            alert("Erro no upload da imagem. Verifique o console para mais detalhes.");
+            return null;
+        }
+      }
+
     </script>
   </body>
 </html>";
