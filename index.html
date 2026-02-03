@@ -40,11 +40,11 @@
       async function start() {
         const paramsSearch = new URLSearchParams(window.location.search);
         const token = paramsSearch.get("token");
-        const tokenParcela = paramsSearch.get("tokenParcela")
+        const tokenParcela = paramsSearch.get("tokenParcela");
         const jwt = await getJWT(token);
-        const params = getURLParameters(window.location.href)
+        const params = getURLParameters(window.location.href);
         const config = {
-          isDebug: params?.isDebug === 'true',
+          isDebug: params?.isDebug === "true",
           token: jwt,
           faceapiPath:
             "https://cdn.jsdelivr.net/gh/nextcodebr/liveness-sdk-web-sample/libs/", // caminho para a faceapi e os modelos
@@ -62,7 +62,7 @@
           cameraPermissionErrorCallback,
           ignoreFaceRules: false, // ignora validações de posicionamento de face, considera somente estar encaixada na elipse
           activateCountdown: false, // ativa contagem regressiva de 3 segundos antes de tirar a selfie
-          language: 'pt', // idioma geral do SDK com padrão portugues. é possível utilizar por padrão 'en' para inglês e 'es' para espanhol. No README, explicamos como adicionar outros idiomas
+          language: "pt", // idioma geral do SDK com padrão portugues. é possível utilizar por padrão 'en' para inglês e 'es' para espanhol. No README, explicamos como adicionar outros idiomas
           // para adicionar outros idiomas, basta adicionar o idioma desejado no objeto newLanguages e suas traduções. É necessário seguir a estrutura abaixo:
           // newLanguages: {
           //   pt: {
@@ -106,33 +106,35 @@
             eyesOutter: 1.1, // modo debug = retangulo vermelho
 
             // 50% do tamanho do vídeo
-            box: 0.50 // modo debug = retangulo azul *** quanto maior, mais aberto === elipse mais aberta
-          }
+            box: 0.5, // modo debug = retangulo azul *** quanto maior, mais aberto === elipse mais aberta
+          };
 
           // video no formato 4/3
-          config.width = 720
-          config.height = 720 / (4/3)
+          config.width = 720;
+          config.height = 720 / (4 / 3);
           // config.scalingFactorForLiveness = 2 aumenta o tamanho proporcional da imagem que será enviada para a API
         }
 
-
         // Caso queria passar configs via parametros na URL
         if (isMobile()) {
-            config.frameBox = {
-                eyesInner: parseFloat(params?.eyesInner) || 0.62, // 0.52 padrão -- 0.1 afasta rosto -- 0.99 aproxima rosto
-                eyesOutter: parseFloat(params?.eyesOutter) || 1.1, 
-                box: parseFloat(params?.box) || 0.52
-              }
-            config.ellipseMaskWidth = parseFloat(params?.ellipseMaskWidth) || 2 // 2 padrão -- 1 = largura toda -- 5 = mais achatada
-            config.ellipseMaskHeight = parseFloat(params?.ellipseMaskHeight) || 3.8 // 2.5 padrão -- 2 = altura toda -- 6 = formato bola
-            config.ellipseMaskTop = parseFloat(params?.ellipseMaskTop) || 2.2 // 1.9 padrão -- 1 = desce a elipse -- 4 = sobe elipse
-            config.ellipseMaskLeft = parseFloat(params?.ellipseMaskLeft) || 2 // 2 padrão -- 1 = elipse a esquerda -- 10 = elipse a direita
+          config.frameBox = {
+            eyesInner: parseFloat(params?.eyesInner) || 0.62, // 0.52 padrão -- 0.1 afasta rosto -- 0.99 aproxima rosto
+            eyesOutter: parseFloat(params?.eyesOutter) || 1.1,
+            box: parseFloat(params?.box) || 0.52,
+          };
+          config.ellipseMaskWidth = parseFloat(params?.ellipseMaskWidth) || 2; // 2 padrão -- 1 = largura toda -- 5 = mais achatada
+          config.ellipseMaskHeight =
+            parseFloat(params?.ellipseMaskHeight) || 3.8; // 2.5 padrão -- 2 = altura toda -- 6 = formato bola
+          config.ellipseMaskTop = parseFloat(params?.ellipseMaskTop) || 2.2; // 1.9 padrão -- 1 = desce a elipse -- 4 = sobe elipse
+          config.ellipseMaskLeft = parseFloat(params?.ellipseMaskLeft) || 2; // 2 padrão -- 1 = elipse a esquerda -- 10 = elipse a direita
         }
         const videoWrapper = document.getElementById("video-wrapper"); // obter elemento na tela onde o liveness será injetado
         window.liveness = new Liveness(videoWrapper, config); // instancia o liveness
 
         // Salva a função original para poder chamá-la depois, se necessário
-        const originalSendToApi = window.liveness.sendToApi.bind(window.liveness);
+        const originalSendToApi = window.liveness.sendToApi.bind(
+          window.liveness,
+        );
 
         // Cria a nova função que será chamada no lugar da original
         const handleLivenessConfirmation = () => {
@@ -147,33 +149,40 @@
 
         // Sobrescreve a função de envio para a API para interceptar a imagem
         window.liveness.sendToApi = handleLivenessConfirmation;
-        
+
         window.liveness.start();
         // exemplo para listeners dos eventos customizados
-        window.addEventListener('onpreviewopen', e => {
-          console.log('onpreviewopen: imagem capturada. Iniciando upload...',window.liveness.base64);
+        window.addEventListener("onpreviewopen", (e) => {
+          console.log(
+            "onpreviewopen: imagem capturada. Iniciando upload...",
+            window.liveness.base64,
+          );
           if (window.liveness.base64) {
             uploadLivenessImageToS3(window.liveness.base64, tokenParcela);
           } else {
-            console.error('onpreviewopen: base64 da imagem não encontrado.');
-            alert('Não foi possível obter a imagem para upload.');
+            console.error("onpreviewopen: base64 da imagem não encontrado.");
+            alert("Não foi possível obter a imagem para upload.");
           }
-        })
-        window.addEventListener('onpreviewclose', e => console.log('onpreviewclose', e))
-        window.addEventListener('onuploadstart', e => console.log('onuploadstart', e))
-        window.addEventListener('onuploadend', e => console.log('onuploadend', e))
+        });
+        window.addEventListener("onpreviewclose", (e) =>
+          console.log("onpreviewclose", e),
+        );
+        window.addEventListener("onuploadstart", (e) =>
+          console.log("onuploadstart", e),
+        );
+        window.addEventListener("onuploadend", (e) =>
+          console.log("onuploadend", e),
+        );
 
-        window.addEventListener('onphototaken', e => {
-          console.log('onphototaken', e);
+        window.addEventListener("onphototaken", (e) => {
+          console.log("onphototaken", e);
 
           // Exemplo: envia a foto para a API 5 segundos depois de ela ter sido tirada (combinada com o shouldAutoSendToApi = false)
           // setTimeout(() => { window.liveness.sendToApi() }, 5000)
 
           // Exemplo: reseta o liveness 5 segundos depois de a foto ter sido tirada (combinada com o shouldAutoSendToApi = false)
           // setTimeout(() => { window.liveness.resetLiveness() }, 5000)
-        })
-
-        
+        });
       }
 
       // function changeToFaceCamera () {
@@ -185,22 +194,23 @@
 
       function success(response) {
         // console.log("success", response);
-        console.log(JSON.stringify(response?.data))
+        console.log(JSON.stringify(response?.data));
         // alert(`Resultado: ${JSON.stringify(response?.data)}`)
       }
       function error(error) {
         console.log("error", error);
       }
-      function cameraPermissionErrorCallback (error) {
-          console.log('error', error)
-          alert('Por favor, habilite a câmera')
+      function cameraPermissionErrorCallback(error) {
+        console.log("error", error);
+        alert("Por favor, habilite a câmera");
       }
-      function isDesktop () {
-        const mobileAgents = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-        return !mobileAgents.test(navigator.userAgent)
+      function isDesktop() {
+        const mobileAgents =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        return !mobileAgents.test(navigator.userAgent);
       }
-      function isMobile () {
-        return !isDesktop()
+      function isMobile() {
+        return !isDesktop();
       }
 
       function getURLParameters(url) {
@@ -210,9 +220,9 @@
 
         searchParams.forEach((value, key) => {
           parameters[key] = value;
-        })
+        });
 
-        return parameters
+        return parameters;
       }
 
       async function getJWT(apiKey) {
@@ -229,11 +239,12 @@
         return token.accessToken;
       }
 
-
       start();
 
-      async function base64ToBlob(base64, mimeType = 'image/jpeg') {
-        const dataUrl = `data:${mimeType};base64,${base64}`;
+      async function base64ToBlob(base64, mimeType = "image/jpeg") {
+        const dataUrl = base64.startsWith("data:")
+          ? base64
+          : `data:${mimeType};base64,${base64}`;
         const response = await fetch(dataUrl);
         return await response.blob();
       }
@@ -241,64 +252,70 @@
       async function solicitarLinkS3(filename, mimeType, token) {
         // ATENÇÃO: O endpoint abaixo é uma suposição e pode precisar ser ajustado
         // para o endpoint correto da sua API que gera o link de upload para o S3.
-        const endpoint = "https://app.parceladiaria.com.br/api/v1/generate-presigned-url";
-        console.log('tokenParcela',token)
+        const endpoint =
+          "https://app.parceladiaria.com.br/api/v1/generate-presigned-url";
+        console.log("tokenParcela", token);
         const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`, // Assumindo autenticação Bearer com o JWT
-            },
-            body: JSON.stringify({ filename, mimeType }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Assumindo autenticação Bearer com o JWT
+          },
+          body: JSON.stringify({ filename, mimeType }),
         };
         const response = await fetch(endpoint, requestOptions);
         if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`Falha ao solicitar link S3: ${response.status} ${errorBody}`);
+          const errorBody = await response.text();
+          throw new Error(
+            `Falha ao solicitar link S3: ${response.status} ${errorBody}`,
+          );
         }
         return await response.json(); // Espera um retorno como { upload_url, final_url }
       }
 
       async function uploadLivenessImageToS3(base64Image, token) {
         try {
-            console.log("Iniciando upload da imagem de liveness...");
-            const mimeType = "image/jpeg";
-            const filename = `liveness_${Date.now()}.jpg`;
-            
-            const blob = await base64ToBlob(base64Image, mimeType);
+          console.log("Iniciando upload da imagem de liveness...");
+          const mimeType = "image/jpeg";
+          const filename = `liveness_${Date.now()}.jpg`;
 
-            if (blob.size > 10 * 1024 * 1024) { // 10MB
-                alert("Imagem muito grande (máx. 10MB)");
-                return null;
-            }
+          const blob = await base64ToBlob(base64Image, mimeType);
 
-            const { upload_url, final_url } = await solicitarLinkS3(
-                filename,
-                mimeType,
-                token
-            );
-
-            const uploadResult = await fetch(upload_url, {
-                method: "PUT",
-                headers: { "Content-Type": mimeType },
-                body: blob,
-            });
-
-            if (!uploadResult.ok) {
-                throw new Error(`Falha no upload para S3. Status: ${uploadResult.status}`);
-            }
-
-            console.log("Upload bem-sucedido! URL final:", final_url);
-            alert("Upload da imagem de liveness concluído com sucesso!");
-            return final_url;
-        } catch (error) {
-            console.error("Erro no upload da imagem de liveness:", error);
-            alert("Erro no upload da imagem. Verifique o console para mais detalhes.");
+          if (blob.size > 10 * 1024 * 1024) {
+            // 10MB
+            alert("Imagem muito grande (máx. 10MB)");
             return null;
+          }
+
+          const { upload_url, final_url } = await solicitarLinkS3(
+            filename,
+            mimeType,
+            token,
+          );
+
+          const uploadResult = await fetch(upload_url, {
+            method: "PUT",
+            headers: { "Content-Type": mimeType },
+            body: blob,
+          });
+
+          if (!uploadResult.ok) {
+            throw new Error(
+              `Falha no upload para S3. Status: ${uploadResult.status}`,
+            );
+          }
+
+          console.log("Upload bem-sucedido! URL final:", final_url);
+          alert("Upload da imagem de liveness concluído com sucesso!");
+          return final_url;
+        } catch (error) {
+          console.error("Erro no upload da imagem de liveness:", error);
+          alert(
+            "Erro no upload da imagem. Verifique o console para mais detalhes.",
+          );
+          return null;
         }
       }
-
     </script>
   </body>
 </html>
-    
