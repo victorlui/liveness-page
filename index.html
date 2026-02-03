@@ -38,9 +38,9 @@
     </div>
     <script>
       async function start() {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-        const tokenParcela = params.get("tokenParcela")
+        const paramsSearch = new URLSearchParams(window.location.search);
+        const token = paramsSearch.get("token");
+        const tokenParcela = paramsSearch.get("tokenParcela")
         const jwt = await getJWT(apiKey);
         const params = getURLParameters(window.location.href)
         const config = {
