@@ -38,47 +38,6 @@
     </div>
     <script>
       async function start() {
-        // * ATENÇÃO * a sua apikey não deve ficar no frontend. A autenticação deve ser feita somente no backend
-        const apiKey = "<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sample Liveness Web</title>
-    <script src="https://cdn.jsdelivr.net/gh/nextcodebr/liveness-sdk-web-sample/dist/v6.8.9/liveness.js"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      *::before,
-      *::after {
-        box-sizing: inherit;
-      }
-      #wrapper {
-        display: grid;
-        width: 100%;
-        height: 100%;
-        align-items: center;
-        justify-content: center;
-      }
-      #modalWrapper {
-        top: 50% !important;
-        left: 50% !important;
-        position: absolute !important;
-        transform: translateX(-50%) translateY(-50%) !important;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="wrapper">
-      <div id="video-wrapper"></div>
-    </div>
-    <script>
-      async function start() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
         const tokenParcela = params.get("tokenParcela")
