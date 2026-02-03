@@ -242,6 +242,7 @@
         // ATENÇÃO: O endpoint abaixo é uma suposição e pode precisar ser ajustado
         // para o endpoint correto da sua API que gera o link de upload para o S3.
         const endpoint = "https://app.parceladiaria.com.br/api/v1/generate-presigned-url";
+        console.log('tokenParcela',token)
         const requestOptions = {
             method: "POST",
             headers: {
