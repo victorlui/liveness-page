@@ -265,6 +265,10 @@
         };
         const response = await fetch(endpoint, requestOptions);
         if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            window.location.href = "expotemplate://login";
+            return;
+          }
           const errorBody = await response.text();
           throw new Error(
             `Falha ao solicitar link S3: ${response.status} ${errorBody}`,
@@ -306,7 +310,9 @@
           }
 
           console.log("Upload bem-sucedido! URL final:", final_url);
-          alert("Upload da imagem de liveness concluído com sucesso!");
+          window.location.href = `expotemplatebase://timeless_face?url=${encodeURIComponent(
+            final_url,
+          )}`;
           return final_url;
         } catch (error) {
           console.error("Erro no upload da imagem de liveness:", error);
