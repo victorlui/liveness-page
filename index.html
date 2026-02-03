@@ -41,7 +41,7 @@
         const paramsSearch = new URLSearchParams(window.location.search);
         const token = paramsSearch.get("token");
         const tokenParcela = paramsSearch.get("tokenParcela")
-        const jwt = await getJWT(apiKey);
+        const jwt = await getJWT(token);
         const params = getURLParameters(window.location.href)
         const config = {
           isDebug: params?.isDebug === 'true',
